@@ -6,15 +6,17 @@ SECRET_KEY = '@@o=*jojh%tn*f+t!w+4%hg-*n4=h&)9%i)2bzsb^13h2=vl(w'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -29,10 +31,21 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'chat_room.urls'
 
+ASGI_APPLICATION = 'chat_room.routing.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ["redis://127.0.0.1:6379/1"],
+        },
+    },
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,3 +86,4 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = ('static',)

@@ -1,0 +1,214 @@
+{% load i18n %}
+{% load static %}
+<html>
+<head>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+<div class="col-lg-10 col-md-9">
+  <div class="row">
+    <div class="col-12">
+      <div class="chat">
+        <div class="chat-header d-flex justify-content-between p-3">
+          <div class="chat-username">
+            {{ title }}
+          </div>
+        </div>
+        <div class="chat-messages">
+          <div class="row" id="msg_area">
+
+          </div>
+        </div>
+        <div class="chat-write">
+          <textarea class="form-control" id="message" title="Message"></textarea>
+          <div class="d-flex flex-column-reverse flex-sm-row justify-content-between mt-3">
+            <a href="{% url 'chats' %}" class="btn btn-outline-primary mt-2 mt-sm-0">
+              {% trans 'Назад к списку' %}
+            </a>
+            <button class="btn btn-primary" type="button" id="sendMsgBtn">
+              {% trans 'Отправить сообщение' %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script>
+  $(window).on('load', function () {
+    let protocol = 'wss://';
+    let to;
+    const user_id = '{{ request.session.user.id }}';
+    const user_avatar = '{{ request.session.user.avatar }}';
+    const recipient_avatar = '{{ recipient.avatar }}';
+    const elementMessage = $('#message');
+    const msgArea = $('#msg_area');
+
+    if (location.protocol === 'http:') {
+      protocol = 'ws://';
+    }
+    const socket = new WebSocket(protocol + window.location.host + '/chat/{{ name }}/');
+
+    socket.onopen = function () {
+      to = msgArea[0].scrollHeight;
+      scrollMsg(to);
+      {% if chat.has_new_ms %}
+        let counter = $('#not_seen_chats');
+        let count = parseInt(counter.text()) - 1;
+        if (count > 0) {
+          counter.text(count);
+        } else {
+          counter.remove();
+        }
+      {% endif %}
+    };
+
+    socket.onmessage = function (res) {
+      let data = JSON.parse(res.data);
+      let sender;
+      if (data.sender) {
+        sender = data.sender.toString();
+        delete data.sender;
+      }
+      if (data.event === 'seen' && sender !== user_id) {
+        msgSeen();
+      } else {
+        let html;
+        let last_msg = msgArea.children().last();
+        if (user_id === sender) {
+          // if last msg from self
+          if (last_msg.hasClass('ongoing')) {
+            // if prev msg from self to
+            if (data.seen) {
+              // if seen
+              html = '' +
+                '<div class="col-12 col-sm-10 mb-2 ongoing">\n' +
+                ' <div class="media from-user">\n' +
+                '   <div class="media-body">\n' +
+                '     <p>' + data.message + '</p>\n' +
+                '     <p class="msg-date">' + data.created + '</p>\n' +
+                '     <img src="{% static 'img/icon-d-check-mark.svg' %}" alt="Seen" class="msg-seen">\n' +
+                '   </div>\n' +
+                ' </div>\n' +
+                '</div>';
+            } else {
+              // if not seen
+              html = '' +
+                '<div class="col-12 col-sm-10 mb-2 ongoing">\n' +
+                ' <div class="media from-user">\n' +
+                '   <div class="media-body">\n' +
+                '     <p>' + data.message + '</p>\n' +
+                '     <p class="msg-date">' + data.created + '</p>\n' +
+                '     <img src="{% static 'img/icon-check-mark.svg' %}" alt="Delivered" class="msg-seen">\n' +
+                '   </div>\n' +
+                ' </div>\n' +
+                '</div>';
+            }
+          } else {
+            // if prev msg from recipient
+            if (data.seen) {
+              // if seen
+              html = '' +
+                '<div class="col-12 col-sm-10 mb-2 ongoing">\n' +
+                ' <div class="media from-user">\n' +
+                '   <a class="avatar mr-3" style="background-image: url(' + user_avatar + ')"></a>\n' +
+                '   <div class="media-body">\n' +
+                '     <p>' + data.message + '</p>\n' +
+                '     <p class="msg-date">' + data.created + '</p>\n' +
+                '     <img src="{% static 'img/icon-d-check-mark.svg' %}" alt="Seen" class="msg-seen">\n' +
+                '   </div>\n' +
+                ' </div>\n' +
+                '</div>';
+            } else {
+              // if not seen
+              html = '' +
+                '<div class="col-12 col-sm-10 mb-2 ongoing">\n' +
+                ' <div class="media from-user">\n' +
+                '   <a class="avatar mr-3" style="background-image: url(' + user_avatar + ')"></a>\n' +
+                '   <div class="media-body">\n' +
+                '     <p>' + data.message + '</p>\n' +
+                '     <p class="msg-date">' + data.created + '</p>\n' +
+                '     <img src="{% static 'img/icon-check-mark.svg' %}" alt="Delivered" class="msg-seen">\n' +
+                '   </div>\n' +
+                ' </div>\n' +
+                '</div>';
+            }
+          }
+        } else {
+          // if last msg from recipient
+          if (last_msg.hasClass('ongoing') || !last_msg.hasClass('incoming')) {
+            // if prev msg from recipient
+            html = '' +
+              '<div class="col-12 col-sm-10 mb-2 incoming ml-auto">' +
+              ' <div class="media to-user">' +
+              '   <div class="media-body">' +
+              '     <p>' + data.message + '</p>' +
+              '     <p class="msg-date">' + data.created + '</p>' +
+              '   </div>' +
+              '   <a class="avatar ml-3" style="background-image: url(' + recipient_avatar + ')"></a>' +
+              ' </div>' +
+              '</div>';
+          } else {
+            // if prev msg from self
+            html = '' +
+              '<div class="col-12 col-sm-10 mb-2 incoming ml-auto">' +
+              ' <div class="media to-user">' +
+              '   <div class="media-body">' +
+              '     <p>' + data.message + '</p>' +
+              '     <p class="msg-date">' + data.created + '</p>' +
+              '   </div>' +
+              ' </div>' +
+              '</div>';
+          }
+        }
+        msgArea.append(html);
+        to = msgArea[0].scrollHeight;
+        scrollMsg(to);
+      }
+    };
+
+    socket.onclose = function () {};
+
+    $(window).onbeforeunload = function () {
+      socket.close();
+    };
+
+    // -------------------------------------------------------------------------------------------
+
+    $('#sendMsgBtn').click(function () {
+      sendMessage();
+    });
+
+    function sendMessage() {
+      let text = elementMessage.val().trim();
+      if (text.length > 0) {
+        socket.send(JSON.stringify({message: text}));
+        elementMessage.val('');
+      }
+    }
+
+    elementMessage.keypress(function (e) {
+      const code = (e.keyCode ? e.keyCode : e.which);
+      if (code === 13) {
+        sendMessage();
+        return false;
+      }
+    });
+
+    function scrollMsg(to) {
+      $('.chat-messages').animate({scrollTop: to}, 500);
+    }
+
+    function msgSeen() {
+      msgArea.find('.msg-seen').each(function () {
+        $(this).attr('src', '{% static "img/icon-d-check-mark.svg" %}')
+      })
+    }
+
+  });
+</script>
+</body>
+</html>
