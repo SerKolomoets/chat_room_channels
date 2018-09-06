@@ -9,6 +9,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'chat',
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -16,7 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'chat'
+
 ]
 
 MIDDLEWARE = [
@@ -40,6 +41,13 @@ CHANNEL_LAYERS = {
             "hosts": ["redis://127.0.0.1:6379/1"],
         },
     },
+}
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'chat_room.sqlite3'),
+    }
 }
 
 TEMPLATES = [

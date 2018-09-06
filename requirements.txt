@@ -1,3 +1,4 @@
 django
-channels
 requests
+channels
+channels_redis

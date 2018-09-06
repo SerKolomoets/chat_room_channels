@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="col-12">
+    <form action="{% url 'set_username' %}" method="post" class="container-fluid p-5">
+      {% csrf_token %}
+      <h1>Please enter your username</h1>
+      <input class="form-control mb-2 col-12 col-md-4" type="text" placeholder="Set your username"
+             name="username" pattern="[a-zA-Z0-9]{6,12}">
+      <p class="small text-muted">- Only Latin characters and digits</p>
+      <p class="small text-muted">- Length must be between 6 - 12 symbols</p>
+      <button class="btn btn-outline-primary">Save</button>
+    </form>
+  </div>
+{% endblock %}

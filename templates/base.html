@@ -1,0 +1,19 @@
+{% load i18n %}
+{% load static %}
+<html>
+<head>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<div class="col-12">
+  <div class="row">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

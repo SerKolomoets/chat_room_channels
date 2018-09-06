@@ -1,0 +1,39 @@
+.from-user .media-body {
+  background: #C7EDFC;
+  padding: 1rem;
+  position: relative;
+}
+
+.to-user .media-body {
+  background: #F0F4F8;
+  padding: 1rem;
+  position: relative;
+}
+
+.msg-date {
+  font-size: 12px;
+  color: #a3a3a3;
+  position: absolute;
+  right: 6px;
+  top: 60%;
+}
+
+.msg-seen {
+  position: absolute;
+  right: 6px;
+  top: 0;
+}
+
+.chat-messages {
+  padding: 1rem;
+  overflow-y: scroll;
+  height: 400px;
+  font-size: 14px;
+}
+
+.chat {
+  margin: 2.5rem auto;
+  padding: 2rem;
+  border-radius: 0;
+  border: 1px solid #DEDEDE;
+}
