@@ -1,2 +1,2 @@
 # chat_room_channels
-Chat Room with Django Channels Demo
+Demonstration real time chat with Django Channels, without history saving.
